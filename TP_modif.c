@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define tamX 11
 #define tamY 15
 
@@ -33,7 +34,7 @@ typedef struct {
 } pelota;
 
 void imprimirCancha(char cancha[tamY][tamX], pelota *p);
-void pedirMovimiento(char cancha[tamY][tamX], jugador team[], int tamaño_equipo, int turno);
+int pedirMovimiento(char cancha[tamY][tamX], jugador team[], int tamaño_equipo, int turno);
 void pedirMovimientoPelota(char cancha[tamY][tamX], pelota *p, int turno);
 int moverJugador(char cancha[tamY][tamX], jugador *j, int nueva_x, int nueva_y);
 int moverPelota(char cancha[tamY][tamX], pelota *p, int nueva_x, int nueva_y, int turno);
@@ -42,7 +43,10 @@ void inicializarTablero(char cancha[tamY][tamX], jugador team_rojo[], jugador te
 
 
 
-
+void limpiarBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
 
 
 /*
@@ -88,14 +92,19 @@ void imprimirCancha(char cancha[tamY][tamX], pelota *p) {
  * retorno>
  * vacio
  */
-void pedirMovimiento(char cancha[tamY][tamX], jugador team[], int tamaño_equipo, int turno) {
+int pedirMovimiento(char cancha[tamY][tamX], jugador team[], int tamaño_equipo, int turno) {
     int id, nueva_x, nueva_y;
 
-    printf("Turno de las %s. Ingrese el ID del jugador que desea mover: %s\n",
+    printf("Turno de las %s %s. Ingrese el ID del jugador que desea mover: %s\n",
            (turno == 0) ? "Rojas" : "Blancas",
+           (turno == 0) ? "ID: 1 al 5, de izq a derecha (ID:3 corresponde al arquero)" : "ID: 6 al 10, de izq a derecha (ID:8 corresponde al arquero)",
            (turno == 0) ? "R" : "B");
 
-    scanf("%d", &id);
+    if (scanf("%d", &id) != 1) {
+        limpiarBuffer();
+        printf("Entrada no válida. Intente de nuevo.\n");
+        return 0; // Retornar 0 si no hay movimiento válido
+    }
 
     jugador *jugador_a_mover = NULL;
     for (int i = 0; i < tamaño_equipo; i++) {
@@ -107,16 +116,22 @@ void pedirMovimiento(char cancha[tamY][tamX], jugador team[], int tamaño_equipo
 
     if (jugador_a_mover == NULL || (turno == 0 && jugador_a_mover->id > 5) || (turno == 1 && jugador_a_mover->id <= 5)) {
         printf("Jugador no válido para este turno.\n");
-        return;
+        return 0; // Retornar 0 si el jugador no es válido
     }
 
     printf("Ingrese nuevas coordenadas (fila y columna): ");
-    scanf("%d %d", &nueva_x, &nueva_y);
+    if (scanf("%d %d", &nueva_x, &nueva_y) != 2) {
+        limpiarBuffer();
+        printf("Entrada no válida. Intente de nuevo.\n");
+        return 0; // Retornar 0 si no hay movimiento válido
+    }
 
     if (moverJugador(cancha, jugador_a_mover, nueva_x, nueva_y)) {
         printf("Movimiento exitoso.\n");
+        return 1; // Retornar 1 si se hizo un movimiento válido
     } else {
         printf("Movimiento inválido.\n");
+        return 0; // Retornar 0 si el movimiento no fue válido
     }
 }
 
@@ -134,6 +149,7 @@ void pedirMovimientoPelota(char cancha[tamY][tamX], pelota *p, int turno) {
 
     printf("Ingrese nuevas coordenadas para mover la pelota (fila y columna): ");
     scanf("%d %d", &nueva_x, &nueva_y);
+    limpiarBuffer(); // Limpia el búfer de entrada
 
     if (moverPelota(cancha, p, nueva_x, nueva_y, turno)) {
         printf("Movimiento de la pelota exitoso.\n");
@@ -168,7 +184,7 @@ int moverJugador(char cancha[tamY][tamX], jugador *j, int nueva_x, int nueva_y) 
     }
 
 
-    if (cancha[nueva_x][nueva_y] != ' ') {
+    if (cancha[nueva_x][nueva_y] != '_') {
         return 0;
     }
 
@@ -178,6 +194,28 @@ int moverJugador(char cancha[tamY][tamX], jugador *j, int nueva_x, int nueva_y) 
     j->pos_x = nueva_x;
     j->pos_y = nueva_y;
     return 1;
+}
+
+int verificarPosesion(char cancha[tamY][tamX], pelota *p, int turno) {
+    char equipo = (turno == 0) ? 'R' : 'B';
+
+    // Comprobar las posiciones adyacentes
+    for (int dx = -1; dx <= 1; dx++) {
+        for (int dy = -1; dy <= 1; dy++) {
+            if (dx == 0 && dy == 0) continue; // Ignorar la posición actual
+
+            int x_adjacente = p->pos_x + dx;
+            int y_adjacente = p->pos_y + dy;
+
+            if (x_adjacente >= 0 && x_adjacente < tamY && y_adjacente >= 0 && y_adjacente < tamX) {
+                if (cancha[x_adjacente][y_adjacente] == equipo) {
+                    return 1; // Se encontró un jugador adyacente
+                }
+            }
+        }
+    }
+
+    return 0; // No se encontró un jugador adyacente
 }
 
 /*Función para mover la pelota
@@ -202,32 +240,8 @@ int moverPelota(char cancha[tamY][tamX], pelota *p, int nueva_x, int nueva_y, in
         return 0; // Movimiento inválido
     }
 
-    // Verificar si hay un jugador del equipo en las posiciones adyacentes
-    char equipo = (turno == 0) ? 'R' : 'B'; // 'R' para rojas, 'B' para blancas
-    int hay_jugador_adjacente = 0;
 
-    // Comprobar las posiciones adyacentes
-    for (int dx = -1; dx <= 1; dx++) {
-        for (int dy = -1; dy <= 1; dy++) {
-            if (dx == 0 && dy == 0) continue; // Ignorar la posición actual
-            int x_adjacente = p->pos_x + dx;
-            int y_adjacente = p->pos_y + dy;
-
-            if (x_adjacente >= 0 && x_adjacente < tamY && y_adjacente >= 0 && y_adjacente < tamX) {
-                if (cancha[x_adjacente][y_adjacente] == equipo) {
-                    hay_jugador_adjacente = 1;
-                    break;
-                }
-            }
-        }
-        if (hay_jugador_adjacente) break;
-    }
-
-    if (!hay_jugador_adjacente) {
-        return 0; // No se puede mover la pelota si no hay jugadores adyacentes
-    }
-
-    cancha[p->pos_x][p->pos_y] = ' '; // Vaciar la posición original
+    cancha[p->pos_x][p->pos_y] = '_'; // Vaciar la posición original
     cancha[nueva_x][nueva_y] = '0'; // Marcar la nueva posición de la pelota
     p->pos_x = nueva_x; // Actualizar la posición de la pelota
     p->pos_y = nueva_y;
@@ -251,20 +265,21 @@ void inicializarTablero(char cancha[tamY][tamX], jugador team_rojo[], jugador te
             cancha[i][j] = '_';
         }
     }
+    team_rojo[1].id = 1; team_rojo[1].pos_x = 8; team_rojo[1].pos_y = 2; // R4
+    team_rojo[3].id = 2; team_rojo[3].pos_x = 10; team_rojo[3].pos_y = 3; // R2
+    team_rojo[2].id = 3; team_rojo[2].pos_x = 11; team_rojo[2].pos_y = 5; // R3
+    team_rojo[4].id = 4; team_rojo[4].pos_x = 10; team_rojo[4].pos_y = 7; // R1
+    team_rojo[0].id = 5; team_rojo[0].pos_x = 8; team_rojo[0].pos_y = 8; // R5
 
 
-    team_rojo[0].id = 1; team_rojo[0].pos_x = 12; team_rojo[0].pos_y = 5; // R1
-    team_rojo[1].id = 2; team_rojo[1].pos_x = 10; team_rojo[1].pos_y = 3; // R2
-    team_rojo[2].id = 3; team_rojo[2].pos_x = 10; team_rojo[2].pos_y = 7; // R3
-    team_rojo[3].id = 4; team_rojo[3].pos_x = 8; team_rojo[3].pos_y = 2; // R4
-    team_rojo[4].id = 5; team_rojo[4].pos_x = 8; team_rojo[4].pos_y = 8; // R5
 
 
-    team_blanco[0].id = 1; team_blanco[0].pos_x = 3; team_blanco[0].pos_y = 5; // B1
-    team_blanco[1].id = 2; team_blanco[1].pos_x = 4; team_blanco[1].pos_y = 3; // B2
-    team_blanco[2].id = 3; team_blanco[2].pos_x = 4; team_blanco[2].pos_y = 7; // B3
-    team_blanco[3].id = 4; team_blanco[3].pos_x = 6; team_blanco[3].pos_y = 2; // B4
-    team_blanco[4].id = 5; team_blanco[4].pos_x = 6; team_blanco[4].pos_y = 8; // B5
+
+    team_blanco[3].id = 6; team_blanco[3].pos_x = 6; team_blanco[3].pos_y = 2; // B1
+    team_blanco[1].id = 7; team_blanco[1].pos_x = 4; team_blanco[1].pos_y = 3; // B2
+    team_blanco[0].id = 8; team_blanco[0].pos_x = 3; team_blanco[0].pos_y = 5; // B3
+    team_blanco[2].id = 9; team_blanco[2].pos_x = 4; team_blanco[2].pos_y = 7; // B4
+    team_blanco[4].id = 10; team_blanco[4].pos_x = 6; team_blanco[4].pos_y = 8; // B5
 
 
     for (int i = 0; i < tamaño_equipo; i++) {
@@ -285,15 +300,30 @@ int main(void) {
     char cancha[tamY][tamX];
     pelota p;
 
-
     inicializarTablero(cancha, team_rojo, team_blanco, 5, &p);
 
     int turno = 0; // 0 para rojos, 1 para blancos
     while (1) {
         imprimirCancha(cancha, &p);
-        pedirMovimiento(cancha, (turno == 0) ? team_rojo : team_blanco, 5, turno);
-        pedirMovimientoPelota(cancha, &p, turno);
-        turno = 1 - turno; // Cambiar turno
+
+        // Pedir movimiento al jugador
+        int movimiento_valido = pedirMovimiento(cancha, (turno == 0) ? team_rojo : team_blanco, 5, turno);
+
+        // Verificar si hubo un movimiento válido
+        if (movimiento_valido) {
+        	imprimirCancha(cancha, &p);
+            // Solo pedir mover la pelota si se movió un jugador
+            if (verificarPosesion(cancha, &p, turno)) {
+                pedirMovimientoPelota(cancha, &p, turno);
+
+            } else {
+                printf("No hay jugadores adyacentes para mover la pelota. El turno sigue.\n");
+            }
+            // Cambiar turno si se hizo un movimiento válido
+            turno = 1 - turno;
+        } else {
+            printf("Movimiento inválido. El turno sigue.\n");
+        }
     }
 
     return 0;
