@@ -229,14 +229,14 @@ int verificarPosesion(char cancha[tamY][tamX], pelota *p, int turno) {
  * 0 si no se pudo mover la ficha y 1 si es que si se pudo
  */
 int moverPelota(char cancha[tamY][tamX], pelota *p, int nueva_x, int nueva_y, int turno) {
-    if (nueva_x < 1 || nueva_x > 13 || nueva_y < 0 || nueva_y >= tamX) {
+    if (nueva_x < 0 || nueva_x > tamY || nueva_y < 0 || nueva_y >= tamX) {
         return 0; // Movimiento inválido
     }
 
     int delta_x = abs(nueva_x - p->pos_x);
     int delta_y = abs(nueva_y - p->pos_y);
 
-    if (delta_x > 2 || delta_y > 2 || (delta_x + delta_y) > 2) {
+    if (delta_x > 4 || delta_y > 4 || (delta_x + delta_y) > 4) {
         return 0; // Movimiento inválido
     }
 
@@ -272,6 +272,14 @@ void inicializarTablero(char cancha[tamY][tamX], jugador team_rojo[], jugador te
     team_rojo[0].id = 5; team_rojo[0].pos_x = 8; team_rojo[0].pos_y = 8; // R5
 
 
+    cancha[14][1] = '=';
+    cancha[14][2] = '=';
+    cancha[14][8] = '=';
+    cancha[14][9] = '=';
+    cancha[0][1] = '=';
+    cancha[0][2] = '=';
+    cancha[0][8] = '=';
+    cancha[0][9] = '=';
 
 
 
@@ -291,6 +299,13 @@ void inicializarTablero(char cancha[tamY][tamX], jugador team_rojo[], jugador te
     p->pos_x = 7;
     p->pos_y = 5;
 }
+int verificarGol(pelota *p) {
+    // Comprueba si la pelota está en las filas centrales (1-2 y 12-13)
+    if ((p->pos_x == 0 ) || (p->pos_x == 14)) {
+        return 1; // Gol
+    }
+    return 0; // No gol
+}
 
 
 
@@ -299,31 +314,50 @@ int main(void) {
     jugador team_blanco[5];
     char cancha[tamY][tamX];
     pelota p;
+    int golesR = 0, golesB = 0;
+    while ((golesR < 2 || golesB < 2)){
+        inicializarTablero(cancha, team_rojo, team_blanco, 5, &p);
+        printf("\nMarcador: \nRojos: %d \nBlancos: %d \n", golesR, golesB);
 
-    inicializarTablero(cancha, team_rojo, team_blanco, 5, &p);
+        int turno = 0; // 0 para rojos, 1 para blancos
+        while (1) {
+            imprimirCancha(cancha, &p);
+            printf("\nMarcador: \nRojos: %d \nBlancos: %d \n", golesR, golesB);
 
-    int turno = 0; // 0 para rojos, 1 para blancos
-    while (1) {
-        imprimirCancha(cancha, &p);
+            // Pedir movimiento al jugador
+            int movimiento_valido = pedirMovimiento(cancha, (turno == 0) ? team_rojo : team_blanco, 5, turno);
 
-        // Pedir movimiento al jugador
-        int movimiento_valido = pedirMovimiento(cancha, (turno == 0) ? team_rojo : team_blanco, 5, turno);
+            // Verificar si hubo un movimiento válido
+            if (movimiento_valido) {
+            	imprimirCancha(cancha, &p);
+                // Solo pedir mover la pelota si se movió un jugador
+                if (verificarPosesion(cancha, &p, turno)) {
+                    pedirMovimientoPelota(cancha, &p, turno);
 
-        // Verificar si hubo un movimiento válido
-        if (movimiento_valido) {
-        	imprimirCancha(cancha, &p);
-            // Solo pedir mover la pelota si se movió un jugador
-            if (verificarPosesion(cancha, &p, turno)) {
-                pedirMovimientoPelota(cancha, &p, turno);
-
+                } else {
+                    printf("No hay jugadores adyacentes para mover la pelota. El turno sigue.\n");
+                }
+                // Verificar si hay un gol
+                if (verificarGol(&p)) {
+                    printf("¡Gol! Reiniciando el tablero...\n");
+                    inicializarTablero(cancha, team_rojo, team_blanco, 5, &p);
+                    if(turno==0){
+                    	golesR++;
+                    }else
+                    	golesB++;
+                }
+                // Cambiar turno si se hizo un movimiento válido
+                turno = 1 - turno;
             } else {
-                printf("No hay jugadores adyacentes para mover la pelota. El turno sigue.\n");
+                printf("Movimiento inválido. El turno sigue.\n");
             }
-            // Cambiar turno si se hizo un movimiento válido
-            turno = 1 - turno;
-        } else {
-            printf("Movimiento inválido. El turno sigue.\n");
         }
+    }
+    printf("Juego finalizado!!!.\n");
+    if (golesR==2){
+    	printf("Ganador: Rojos.\n");
+    }else if (golesB==2){
+    	printf("Ganador: Blancos.\n");
     }
 
     return 0;
