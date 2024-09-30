@@ -32,6 +32,18 @@ typedef struct {
     int pos_y;
 } pelota;
 
+void imprimirCancha(char cancha[tamY][tamX], pelota *p);
+void pedirMovimiento(char cancha[tamY][tamX], jugador team[], int tamaño_equipo, int turno);
+void pedirMovimientoPelota(char cancha[tamY][tamX], pelota *p, int turno);
+int moverJugador(char cancha[tamY][tamX], jugador *j, int nueva_x, int nueva_y);
+int moverPelota(char cancha[tamY][tamX], pelota *p, int nueva_x, int nueva_y, int turno);
+void inicializarTablero(char cancha[tamY][tamX], jugador team_rojo[], jugador team_blanco[], int tamaño_equipo, pelota *p);
+
+
+
+
+
+
 
 /*
  * Funcion que imprime el tablero (cancha) con sus piezas colocadas
