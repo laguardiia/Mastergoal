@@ -306,7 +306,8 @@ void inicializarTablero(char cancha[tamY][tamX], jugador team_rojo[], jugador te
     team_rojo[4].id = 4; team_rojo[4].pos_x = 10; team_rojo[4].pos_y = 7; // R1
     team_rojo[0].id = 5; team_rojo[0].pos_x = 8; team_rojo[0].pos_y = 8; // R5
 
-
+    cancha[14][0] = '=';
+    cancha[14][10] = '=';
     cancha[14][1] = '=';
     cancha[14][2] = '=';
     cancha[14][8] = '=';
@@ -315,7 +316,20 @@ void inicializarTablero(char cancha[tamY][tamX], jugador team_rojo[], jugador te
     cancha[0][2] = '=';
     cancha[0][8] = '=';
     cancha[0][9] = '=';
-
+    cancha[0][0] = '=';
+    cancha[0][10] = '=';
+    
+    cancha[13][0] = '.';
+    cancha[13][10] = '.';
+    for(int aux1=3; aux1<=7; aux1++){
+        cancha[13][aux1] = '.';
+    }
+    cancha[1][0] = '.';
+    cancha[1][10] = '.';
+    for(int aux2=3; aux2<=7; aux2++){
+        cancha[1][aux2] = '.';
+    }
+    
 
 
     team_blanco[3].id = 6; team_blanco[3].pos_x = 6; team_blanco[3].pos_y = 2; // B1
