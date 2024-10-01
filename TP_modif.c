@@ -336,7 +336,7 @@ void inicializarTablero(char cancha[tamY][tamX], jugador team_rojo[], jugador te
 }
 int verificarGol(pelota *p) {
     // Comprueba si la pelota está en las filas centrales (1-2 y 12-13)
-    if ((p->pos_x == 0 ) || ((p->pos_x == 14)) && ((p->pos_y==3) ||(p->pos_y==4 || (p->pos_y==5) || (p->pos_y==6) || (p->pos_y==7)))) {
+    if ( (p->pos_x == 14 || p->pos_x == 0) && (p->pos_y== 3 || p->pos_y== 4 || p->pos_y== 5 || p->pos_y== 6 || p->pos_y== 7) ) {
         return 1; // Gol
     }
     return 0; // No gol
