@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <string.h>
 #define tamX 11
 #define tamY 15
@@ -47,7 +48,30 @@ void limpiarBuffer() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
+int elegirColor() {
+    int color;
+    printf("Elige tu equipo (1 - Rojos, 2 - Blancos): ");
+    while (scanf("%d", &color) != 1 || (color != 1 && color != 2)) {
+        limpiarBuffer();
+        printf("Entrada no válida. Elige 1 para Rojos o 2 para Blancos: ");
+    }
+    return color; // 1 para rojos, 2 para blancos
+}
 
+int elegirEquipoInicial() {
+    int opcion;
+    printf("Elige el equipo que comenzará (1 - Rojos, 2 - Blancos, 3 - Aleatorio): ");
+    while (scanf("%d", &opcion) != 1 || (opcion < 1 || opcion > 3)) {
+        limpiarBuffer();
+        printf("Entrada no válida. Elige 1 (Rojos), 2 (Blancos) o 3 (Aleatorio): ");
+    }
+    if (opcion == 3) {
+        srand(time(NULL)); // Semilla para el número aleatorio
+        opcion = (rand() % 2) + 1; // 1 para rojos, 2 para blancos
+        printf("El equipo inicial ha sido elegido aleatoriamente: %s\n", (opcion == 1) ? "Rojos" : "Blancos");
+    }
+    return opcion - 1; // Devolvemos 0 para rojos, 1 para blancos
+}
 
 /*
  * Funcion que imprime el tablero (cancha) con sus piezas colocadas
@@ -315,11 +339,17 @@ int main(void) {
     char cancha[tamY][tamX];
     pelota p;
     int golesR = 0, golesB = 0;
-    while ((golesR < 2 || golesB < 2)){
+    
+    // Elegir el equipo del jugador
+    int color_equipo = elegirColor(); // 1 para rojos, 2 para blancos
+    
+    // Elegir el equipo que comienza el partido
+    int turno = elegirEquipoInicial(); // 0 para rojos, 1 para blancos
+    
+    while ((golesR < 2 && golesB < 2)){
         inicializarTablero(cancha, team_rojo, team_blanco, 5, &p);
         printf("\nMarcador: \nRojos: %d \nBlancos: %d \n", golesR, golesB);
-
-        int turno = 0; // 0 para rojos, 1 para blancos
+        
         while (1) {
             imprimirCancha(cancha, &p);
             printf("\nMarcador: \nRojos: %d \nBlancos: %d \n", golesR, golesB);
