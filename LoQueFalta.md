@@ -1,4 +1,4 @@
-La función que juegue como computadora
+La función que juegue como computadora(Ya está)
 El sistema de pases
 Arreglar la función de posesion de la pelota cuando dos jugadores de ambos equipos tienen posesión
 
