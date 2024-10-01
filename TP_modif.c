@@ -48,6 +48,17 @@ void limpiarBuffer() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
+
+int elegirModoDeJuego() {
+    int modo;
+    printf("Elige el modo de juego:\n1 - Jugador vs Jugador\n2 - Jugador vs Computadora\n");
+    while (scanf("%d", &modo) != 1 || (modo < 1 || modo > 2)) {
+        limpiarBuffer();
+        printf("Entrada no válida. Elige 1 para Jugador vs Jugador o 2 para Jugador vs Computadora: ");
+    }
+    return modo; // 1 para Jugador vs Jugador, 2 para Jugador vs Computadora
+}
+
 int elegirColor() {
     int color;
     printf("Elige tu equipo (1 - Rojos, 2 - Blancos): ");
@@ -325,7 +336,7 @@ void inicializarTablero(char cancha[tamY][tamX], jugador team_rojo[], jugador te
 }
 int verificarGol(pelota *p) {
     // Comprueba si la pelota está en las filas centrales (1-2 y 12-13)
-    if ((p->pos_x == 0 ) || (p->pos_x == 14)) {
+    if ((p->pos_x == 0 ) || ((p->pos_x == 14)) && ((p->pos_y==3) ||(p->pos_y==4 || (p->pos_y==5) || (p->pos_y==6) || (p->pos_y==7)))) {
         return 1; // Gol
     }
     return 0; // No gol
@@ -340,6 +351,9 @@ int main(void) {
     pelota p;
     int golesR = 0, golesB = 0;
     
+    // Elegir el modo de juego
+    int modo = elegirModoDeJuego();
+    
     // Elegir el equipo del jugador
     int color_equipo = elegirColor(); // 1 para rojos, 2 para blancos
     
@@ -350,6 +364,7 @@ int main(void) {
         inicializarTablero(cancha, team_rojo, team_blanco, 5, &p);
         printf("\nMarcador: \nRojos: %d \nBlancos: %d \n", golesR, golesB);
         
+        //Bucle del juego
         while (1) {
             imprimirCancha(cancha, &p);
             printf("\nMarcador: \nRojos: %d \nBlancos: %d \n", golesR, golesB);
