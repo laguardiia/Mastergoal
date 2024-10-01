@@ -34,6 +34,7 @@ typedef struct {
     int pos_y;
 } pelota;
 
+
 void imprimirCancha(char cancha[tamY][tamX], pelota *p);
 int pedirMovimiento(char cancha[tamY][tamX], jugador team[], int tamaño_equipo, int turno);
 void pedirMovimientoPelota(char cancha[tamY][tamX], pelota *p, int turno);
@@ -48,9 +49,6 @@ void limpiarBuffer();
 int elegirModoDeJuego();
 int elegirColor();
 int elegirEquipoInicial();
-
-
-
 
 
 
@@ -309,21 +307,21 @@ int moverPelota(char cancha[tamY][tamX], pelota *p, int nueva_x, int nueva_y, in
     cancha[nueva_x][nueva_y] = '0'; // Marcar la nueva posición de la pelota
     p->pos_x = nueva_x; // Actualizar la posición de la pelota
     p->pos_y = nueva_y;
-    return 1; // Movimiento exitoso
+    return 1;
 }
 
 int moverPelotaComp(char cancha[tamY][tamX], pelota *p, int turno) {
     int nueva_x = p->pos_x+ (rand() % 5 - 1);
     int nueva_y = p->pos_y + (rand() % 5 - 1);
     if (nueva_x < 0 || nueva_x > tamY || nueva_y < 0 || nueva_y >= tamX) {
-        return 0; // Movimiento inválido
+        return 0;
     }
 
     int delta_x = abs(nueva_x - p->pos_x);
     int delta_y = abs(nueva_y - p->pos_y);
 
     if (delta_x > 4 || delta_y > 4 || (delta_x + delta_y) > 4) {
-        return 0; // Movimiento inválido
+        return 0;
     }
 
 
@@ -331,7 +329,7 @@ int moverPelotaComp(char cancha[tamY][tamX], pelota *p, int turno) {
     cancha[nueva_x][nueva_y] = '0'; // Marcar la nueva posición de la pelota
     p->pos_x = nueva_x; // Actualizar la posición de la pelota
     p->pos_y = nueva_y;
-    return 1; // Movimiento exitoso
+    return 1;
 }
 
 /*Función para inicializar el tablero
@@ -400,7 +398,7 @@ void inicializarTablero(char cancha[tamY][tamX], jugador team_rojo[], jugador te
     p->pos_y = 5;
 }
 int verificarGol(pelota *p) {
-    // Comprueba si la pelota está en las filas centrales (1-2 y 12-13)
+
     if ( (p->pos_x == 14 || p->pos_x == 0) && (p->pos_y== 3 || p->pos_y== 4 || p->pos_y== 5 || p->pos_y== 6 || p->pos_y== 7) ) {
         return 1; // Gol
     }
@@ -430,12 +428,12 @@ int main(void) {
         inicializarTablero(cancha, team_rojo, team_blanco, 5, &p);
         printf("\nMarcador: \nRojos: %d \nBlancos: %d \n", golesR, golesB);
 
-        //Bucle del juego
+
         while (1) {
             imprimirCancha(cancha, &p);
             printf("\nMarcador: \nRojos: %d \nBlancos: %d \n", golesR, golesB);
 
-            if (modo == 1) { // Jugador vs Jugador
+            if (modo == 1) {
                 if (turno == 0) {
 
                     int movimiento_valido = pedirMovimiento(cancha, team_rojo, 5, turno);
