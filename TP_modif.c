@@ -42,6 +42,7 @@ int moverPelota(char cancha[tamY][tamX], pelota *p, int nueva_x, int nueva_y, in
 int verificarPosesion(char cancha[tamY][tamX], pelota *p, int turno);
 void inicializarTablero(char cancha[tamY][tamX], jugador team_rojo[], jugador team_blanco[], int tamaño_equipo, pelota *p);
 void moverComp(char cancha[tamY][tamX], jugador team[], int tamaño_equipo, pelota *p);
+int moverPelotaComp(char cancha[tamY][tamX], pelota *p, int turno);
 int verificarGol(pelota *p);
 void limpiarBuffer();
 int elegirModoDeJuego();
