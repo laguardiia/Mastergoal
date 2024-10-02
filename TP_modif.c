@@ -38,6 +38,7 @@ typedef struct {
 void imprimirCancha(char cancha[tamY][tamX], pelota *p);
 int pedirMovimiento(char cancha[tamY][tamX], jugador team[], int tamaño_equipo, int turno);
 void pedirMovimientoPelota(char cancha[tamY][tamX], pelota *p, int turno);
+int pase (char cancha[tamY][tamX], pelota *p, int nueva_x, int nueva_y, int turno);
 int moverJugador(char cancha[tamY][tamX], jugador *j, int nueva_x, int nueva_y);
 int moverPelota(char cancha[tamY][tamX], pelota *p, int nueva_x, int nueva_y, int turno);
 int verificarPosesion(char cancha[tamY][tamX], pelota *p, int turno);
@@ -64,7 +65,7 @@ int elegirModoDeJuego() {
         limpiarBuffer();
         printf("Entrada no válida. Elige 1 para Jugador vs Jugador o 2 para Jugador vs Computadora: ");
     }
-    return modo; // 1 para Jugador vs Jugador, 2 para Jugador vs Computadora
+    return modo;
 }
 
 int elegirColor() {
@@ -74,7 +75,7 @@ int elegirColor() {
         limpiarBuffer();
         printf("Entrada no válida. Elige 1 para Rojos o 2 para Blancos: ");
     }
-    return color; // 1 para rojos, 2 para blancos
+    return color;
 }
 
 int elegirEquipoInicial() {
@@ -85,11 +86,11 @@ int elegirEquipoInicial() {
         printf("Entrada no válida. Elige 1 (Rojos), 2 (Blancos) o 3 (Aleatorio): ");
     }
     if (opcion == 3) {
-        srand(time(NULL)); // Semilla para el número aleatorio
-        opcion = (rand() % 2) + 1; // 1 para rojos, 2 para blancos
+        srand(time(NULL));
+        opcion = (rand() % 2) + 1;
         printf("El equipo inicial ha sido elegido aleatoriamente: %s\n", (opcion == 1) ? "Rojos" : "Blancos");
     }
-    return opcion - 1; // Devolvemos 0 para rojos, 1 para blancos
+    return opcion - 1;
 }
 
 /*
@@ -146,7 +147,7 @@ int pedirMovimiento(char cancha[tamY][tamX], jugador team[], int tamaño_equipo,
     if (scanf("%d", &id) != 1) {
         limpiarBuffer();
         printf("Entrada no válida. Intente de nuevo.\n");
-        return 0; // Retornar 0 si no hay movimiento válido
+        return 0;
     }
 
     jugador *jugador_a_mover = NULL;
@@ -159,48 +160,24 @@ int pedirMovimiento(char cancha[tamY][tamX], jugador team[], int tamaño_equipo,
 
     if (jugador_a_mover == NULL || (turno == 0 && jugador_a_mover->id > 5) || (turno == 1 && jugador_a_mover->id <= 5)) {
         printf("Jugador no válido para este turno.\n");
-        return 0; // Retornar 0 si el jugador no es válido
+        return 0;
     }
 
     printf("Ingrese nuevas coordenadas (fila y columna): ");
     if (scanf("%d %d", &nueva_x, &nueva_y) != 2) {
         limpiarBuffer();
         printf("Entrada no válida. Intente de nuevo.\n");
-        return 0; // Retornar 0 si no hay movimiento válido
+        return 0;
     }
 
     if (moverJugador(cancha, jugador_a_mover, nueva_x, nueva_y)) {
         printf("Movimiento exitoso.\n");
-        return 1; // Retornar 1 si se hizo un movimiento válido
+        return 1;
     } else {
         printf("Movimiento inválido.\n");
-        return 0; // Retornar 0 si el movimiento no fue válido
+        return 0;
     }
 }
-
-/*Función que pide al usuario las coordenadas para mover la pelota
- *
- * Parametros>
- * matriz de char que representa la cancha
- * puntero al struct que representa la pelota
- * entero que representa el turno actual
- * retorno>
- * vacio
- */
-void pedirMovimientoPelota(char cancha[tamY][tamX], pelota *p, int turno) {
-    int nueva_x, nueva_y;
-
-    printf("Ingrese nuevas coordenadas para mover la pelota (fila y columna): ");
-    scanf("%d %d", &nueva_x, &nueva_y);
-    limpiarBuffer(); // Limpia el búfer de entrada
-
-    if (moverPelota(cancha, p, nueva_x, nueva_y, turno)) {
-        printf("Movimiento de la pelota exitoso.\n");
-    } else {
-        printf("Movimiento de la pelota inválido.\n");
-    }
-}
-
 /*Función para mover una ficha
  *
  * Parametros>
@@ -238,6 +215,7 @@ int moverJugador(char cancha[tamY][tamX], jugador *j, int nueva_x, int nueva_y) 
     j->pos_y = nueva_y;
     return 1;
 }
+
 /*
  * Funcion que elige los movimientos de la computadora
  */
@@ -256,30 +234,57 @@ void moverComp(char cancha[tamY][tamX], jugador team[], int tamaño_equipo, pelo
     }
 }
 
-int verificarPosesion(char cancha[tamY][tamX], pelota *p, int turno) {
-    char equipo = (turno == 0) ? 'R' : 'B';
+/*Función pque verifica si el movimiento de la pelota es a un jugador (pase)
+ *
+ * Parametros>
+ * matriz de char que representa la cancha
+ * puntero al struct pelota
+ * la pocision de destino
+ * retorno>
+ * 0 si no es un pase y 1 si es un pase
+ */
+int pase (char cancha[tamY][tamX], pelota *p, int nueva_x, int nueva_y, int turno){
+	char equipo = (turno == 0) ? 'R' : 'B';
 
-    // Comprobar las posiciones adyacentes
     for (int dx = -1; dx <= 1; dx++) {
         for (int dy = -1; dy <= 1; dy++) {
-            if (dx == 0 && dy == 0) continue; // Ignorar la posición actual
+            if (dx == 0 && dy == 0) continue;
 
-            int x_adjacente = p->pos_x + dx;
-            int y_adjacente = p->pos_y + dy;
+            int x_adyacente = nueva_x + dx;
+            int y_adyacente = nueva_y + dy;
 
-            if (x_adjacente >= 0 && x_adjacente < tamY && y_adjacente >= 0 && y_adjacente < tamX) {
-                if (cancha[x_adjacente][y_adjacente] == equipo) {
-                    return 1; // Se encontró un jugador adyacente
+            if (x_adyacente >= 0 && x_adyacente < tamY && y_adyacente >= 0 && y_adyacente < tamX) {
+                if (cancha[x_adyacente][y_adyacente] == equipo) {
+                    return 1;
                 }
+
             }
         }
-    }
-
-    return 0; // No se encontró un jugador adyacente
+    } return 0;
 }
 
+/*Función que pide al usuario las coordenadas para mover la pelota
+ *
+ * Parametros>
+ * matriz de char que representa la cancha
+ * puntero al struct que representa la pelota
+ * entero que representa el turno actual
+ * retorno>
+ * vacio
+ */
+void pedirMovimientoPelota(char cancha[tamY][tamX], pelota *p, int turno) {
+    int nueva_x, nueva_y;
 
+    printf("Ingrese nuevas coordenadas para mover la pelota (fila y columna): ");
+    scanf("%d %d", &nueva_x, &nueva_y);
+    limpiarBuffer();
 
+    if (moverPelota(cancha, p, nueva_x, nueva_y, turno)) {
+        printf("Movimiento de la pelota exitoso.\n");
+    } else {
+        printf("Movimiento de la pelota inválido.\n");
+    }
+}
 /*Función para mover la pelota
  *
  * Parametros>
@@ -298,6 +303,8 @@ int moverPelota(char cancha[tamY][tamX], pelota *p, int nueva_x, int nueva_y, in
     int delta_x = abs(nueva_x - p->pos_x);
     int delta_y = abs(nueva_y - p->pos_y);
 
+
+
     if (delta_x > 4 || delta_y > 4 || (delta_x + delta_y) > 4) {
         return 0; // Movimiento inválido
     }
@@ -310,6 +317,17 @@ int moverPelota(char cancha[tamY][tamX], pelota *p, int nueva_x, int nueva_y, in
     return 1;
 }
 
+
+/*
+ * Funcion que realiza movimientos de la pelota al azar por la computadora
+ * parametros>
+ * matriz cancha
+ * puntero al struct de la pelota
+ * entero que indica el turno
+ *
+ * retorno>
+ * 0 si no pudo mover la pelota y 1 si es que si lo pudo hacer
+ */
 int moverPelotaComp(char cancha[tamY][tamX], pelota *p, int turno) {
     int nueva_x = p->pos_x+ (rand() % 5 - 1);
     int nueva_y = p->pos_y + (rand() % 5 - 1);
@@ -331,6 +349,48 @@ int moverPelotaComp(char cancha[tamY][tamX], pelota *p, int turno) {
     p->pos_y = nueva_y;
     return 1;
 }
+
+/*Función que verifica quien tiene la posesion de la pelota con los cuadros adyacentes a la misma
+ *
+ * Parametros>
+ * matriz de char que representa la cancha
+ * puntero pelota
+ * entero que representa el turno actual
+ * retorno>
+ * 0 si el equipo en turno no tiene la posesion y 1 si es que si la tiene
+ */
+
+int verificarPosesion(char cancha[tamY][tamX], pelota *p, int turno) {
+    char equipo = (turno == 0) ? 'R' : 'B';
+    char equipoCont = (turno == 0) ? 'B' : 'R';
+    int equipoActual = 0, equipoContrario = 0;
+
+    // Comprobar las posiciones adyacentes
+    for (int dx = -1; dx <= 1; dx++) {
+        for (int dy = -1; dy <= 1; dy++) {
+            if (dx == 0 && dy == 0) continue; // Ignorar la posición actual
+
+            int x_adyacente = p->pos_x + dx;
+            int y_adyacente = p->pos_y + dy;
+
+            if (x_adyacente >= 0 && x_adyacente < tamY && y_adyacente >= 0 && y_adyacente < tamX) {
+                if (cancha[x_adyacente][y_adyacente] == equipo) {
+                    equipoActual++;
+                } else if (cancha[x_adyacente][y_adyacente] == equipoCont){
+                	equipoContrario++;
+                }
+            }
+        }
+    }
+    if(equipoActual>equipoContrario){
+    	return 1;
+    }else
+    return 0; // No se encontró un jugador adyacente
+}
+
+
+
+
 
 /*Función para inicializar el tablero
  *
@@ -397,6 +457,15 @@ void inicializarTablero(char cancha[tamY][tamX], jugador team_rojo[], jugador te
     p->pos_x = 7;
     p->pos_y = 5;
 }
+
+
+/*Función que verifica si la pelota entro en zona de gol
+ *
+ * Parametros>
+ * puntero pelota
+ * retorno>
+ * 0 si no es gol y 1 si es gol
+ */
 int verificarGol(pelota *p) {
 
     if ( (p->pos_x == 14 || p->pos_x == 0) && (p->pos_y== 3 || p->pos_y== 4 || p->pos_y== 5 || p->pos_y== 6 || p->pos_y== 7) ) {
