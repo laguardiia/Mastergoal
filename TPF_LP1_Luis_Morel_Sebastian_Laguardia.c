@@ -297,7 +297,7 @@ void pedirMovimientoPelota(char cancha[tamY][tamX], pelota *p, int turno) {
  */
 int moverPelota(char cancha[tamY][tamX], pelota *p, int nueva_x, int nueva_y, int turno) {
     if (nueva_x < 0 || nueva_x > tamY || nueva_y < 0 || nueva_y >= tamX) {
-        return 0; // Movimiento inválido
+        return 0;
     }
 
     int delta_x = abs(nueva_x - p->pos_x);
@@ -306,7 +306,7 @@ int moverPelota(char cancha[tamY][tamX], pelota *p, int nueva_x, int nueva_y, in
 
 
     if (delta_x > 4 || delta_y > 4 || (delta_x + delta_y) > 4) {
-        return 0; // Movimiento inválido
+        return 0;
     }
 
 
@@ -343,9 +343,9 @@ int moverPelotaComp(char cancha[tamY][tamX], pelota *p, int turno) {
     }
 
 
-    cancha[p->pos_x][p->pos_y] = '_'; // Vaciar la posición original
-    cancha[nueva_x][nueva_y] = '0'; // Marcar la nueva posición de la pelota
-    p->pos_x = nueva_x; // Actualizar la posición de la pelota
+    cancha[p->pos_x][p->pos_y] = '_'; 
+    cancha[nueva_x][nueva_y] = '0'; 
+    p->pos_x = nueva_x; 
     p->pos_y = nueva_y;
     return 1;
 }
@@ -368,7 +368,7 @@ int verificarPosesion(char cancha[tamY][tamX], pelota *p, int turno) {
     // Comprobar las posiciones adyacentes
     for (int dx = -1; dx <= 1; dx++) {
         for (int dy = -1; dy <= 1; dy++) {
-            if (dx == 0 && dy == 0) continue; // Ignorar la posición actual
+            if (dx == 0 && dy == 0) continue;
 
             int x_adyacente = p->pos_x + dx;
             int y_adyacente = p->pos_y + dy;
