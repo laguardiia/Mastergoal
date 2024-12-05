@@ -220,81 +220,37 @@ int moverJugador(char cancha[tamY][tamX], jugador *j, int nueva_x, int nueva_y) 
  * Funcion que elige los movimientos de la computadora
  */
 void moverComp(char cancha[tamY][tamX], jugador team[], int tamaño_equipo, pelota *p) {
-    int posesion = 0;
-    char equipo = (team[0].id <= 5) ? 'R' : 'B'; // Determinar equipo ('R' para rojos, 'B' para blancos)
+    int jugador_mas_cercano = -1;
+    int distancia_minima = tamX + tamY; // Distancia máxima posible en la cancha
 
-    // Verificar si algún jugador tiene posesión de la pelota
-    for (int i = 0; i < tamaño_equipo; i++) {
-        if (abs(team[i].pos_x - p->pos_x) <= 1 && abs(team[i].pos_y - p->pos_y) <= 1) {
-            posesion = 1;
-            break;
+    // Encontrar el jugador más cercano a la pelota
+    for (int i = 1; i < tamaño_equipo; i++) { // Comenzar en 1 para excluir al portero
+        int distancia = abs(team[i].pos_x - p->pos_x) + abs(team[i].pos_y - p->pos_y);
+        if (distancia < distancia_minima) {
+            distancia_minima = distancia;
+            jugador_mas_cercano = i;
         }
     }
 
-    // Seleccionar y mover un único jugador
-    for (int i = 1; i < tamaño_equipo; i++) { // Comienza en 1 para evitar el portero
-        jugador *jugador_actual = &team[i];
+    // Mover el jugador más cercano hacia la pelota
+    if (jugador_mas_cercano != -1) {
+        jugador *jugador_actual = &team[jugador_mas_cercano];
+        int dx = (p->pos_x > jugador_actual->pos_x) ? 1 : (p->pos_x < jugador_actual->pos_x) ? -1 : 0;
+        int dy = (p->pos_y > jugador_actual->pos_y) ? 1 : (p->pos_y < jugador_actual->pos_y) ? -1 : 0;
 
-        // Si el equipo no tiene posesión, acercarse a la pelota
-        if (!posesion) {
-            int mejor_x = jugador_actual->pos_x, mejor_y = jugador_actual->pos_y;
-            int mejor_distancia = abs(jugador_actual->pos_x - p->pos_x) + abs(jugador_actual->pos_y - p->pos_y);
+        int nueva_x = jugador_actual->pos_x + dx;
+        int nueva_y = jugador_actual->pos_y + dy;
 
-            for (int dx = -2; dx <= 2; dx++) {
-                for (int dy = -2; dy <= 2; dy++) {
-                    int nueva_x = jugador_actual->pos_x + dx;
-                    int nueva_y = jugador_actual->pos_y + dy;
-
-                    if (moverJugador(cancha, jugador_actual, nueva_x, nueva_y)) {
-                        int distancia_actual = abs(nueva_x - p->pos_x) + abs(nueva_y - p->pos_y);
-                        if (distancia_actual < mejor_distancia) {
-                            mejor_x = nueva_x;
-                            mejor_y = nueva_y;
-                            mejor_distancia = distancia_actual;
-                        }
-                        // Deshacer movimiento temporal
-                        moverJugador(cancha, jugador_actual, jugador_actual->pos_x, jugador_actual->pos_y);
-                    }
-                }
-            }
-
-            // Mover al mejor lugar encontrado
-            moverJugador(cancha, jugador_actual, mejor_x, mejor_y);
-            printf("La IA movió al jugador %d a (%d, %d).\n", jugador_actual->id, mejor_x, mejor_y);
-            break; // Salir del bucle tras mover un jugador
+        if (moverJugador(cancha, jugador_actual, nueva_x, nueva_y)) {
+            printf("La IA movió al jugador %d hacia la pelota, a (%d, %d).\n", jugador_actual->id, nueva_x, nueva_y);
         } else {
-            // Si el equipo tiene posesión, jugar estratégicamente
-            int objetivo_x = (equipo == 'R') ? 0 : tamY - 1; // Acercarse al arco contrario
-            int objetivo_y = tamX / 2; // Apuntar al centro del arco
-
-            int mejor_x = jugador_actual->pos_x, mejor_y = jugador_actual->pos_y;
-            int mejor_distancia = abs(jugador_actual->pos_x - objetivo_x) + abs(jugador_actual->pos_y - objetivo_y);
-
-            for (int dx = -2; dx <= 2; dx++) {
-                for (int dy = -2; dy <= 2; dy++) {
-                    int nueva_x = jugador_actual->pos_x + dx;
-                    int nueva_y = jugador_actual->pos_y + dy;
-
-                    if (moverJugador(cancha, jugador_actual, nueva_x, nueva_y)) {
-                        int distancia_actual = abs(nueva_x - objetivo_x) + abs(nueva_y - objetivo_y);
-                        if (distancia_actual < mejor_distancia) {
-                            mejor_x = nueva_x;
-                            mejor_y = nueva_y;
-                            mejor_distancia = distancia_actual;
-                        }
-                        // Deshacer movimiento temporal
-                        moverJugador(cancha, jugador_actual, jugador_actual->pos_x, jugador_actual->pos_y);
-                    }
-                }
-            }
-
-            // Mover al mejor lugar encontrado
-            moverJugador(cancha, jugador_actual, mejor_x, mejor_y);
-            printf("La IA movió al jugador %d a (%d, %d).\n", jugador_actual->id, mejor_x, mejor_y);
-            break; // Salir del bucle tras mover un jugador
+            printf("La IA intentó mover al jugador %d pero no pudo.\n", jugador_actual->id);
         }
     }
 }
+
+
+
 
 
 
